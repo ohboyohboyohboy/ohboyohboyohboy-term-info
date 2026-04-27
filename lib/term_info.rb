@@ -179,5 +179,14 @@ module TermInfo
       else result
       end
     end
+
+    def tiparm(capability_template, *args)
+      variadic_args =
+        args.flat_map do |arg|
+          [Fiddle::TYPE_INT, arg]
+        end
+
+      call_terminfo!(:tiparm, capability_template.to_s, *variadic_args).to_s
+    end
   end
 end

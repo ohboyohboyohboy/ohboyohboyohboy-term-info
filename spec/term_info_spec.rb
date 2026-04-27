@@ -72,6 +72,7 @@ RSpec.describe TermInfo do
       expect(functions).to be_a(Hash)
       expect(functions).to have_key('setupterm')
       expect(functions).to have_key('tigetstr')
+      expect(functions).to have_key('tiparm')
       expect(functions).to have_key('tigetflag')
       expect(functions).to have_key('tigetnum')
 
@@ -222,6 +223,61 @@ RSpec.describe TermInfo do
         allow(TermInfo).to receive(:call_terminfo!).and_return(double(to_i: -2))
 
         expect { TermInfo.tigetnum('invalid') }.to raise_error(TermInfo::Error, /is not a numeric capability name/)
+      end
+    end
+
+    describe ".tiparm" do
+      it "accepts a capability template and parameters" do
+        return_pointer = double(to_s: 'formatted_string')
+        expect(TermInfo).to receive(:call_terminfo!).with(
+          :tiparm,
+          'template',
+          Fiddle::TYPE_INT, 1,
+          Fiddle::TYPE_INT, 2
+        ).and_return(return_pointer)
+
+        result = TermInfo.tiparm('template', 1, 2)
+        expect(result).to eq('formatted_string')
+      end
+
+      it "handles no parameters" do
+        return_pointer = double(to_s: 'simple_string')
+        expect(TermInfo).to receive(:call_terminfo!).with(:tiparm, 'template').and_return(return_pointer)
+
+        result = TermInfo.tiparm('template')
+        expect(result).to eq('simple_string')
+      end
+
+      it "converts capability template to string" do
+        return_pointer = double(to_s: 'result')
+        template_object = double(to_s: 'converted_template')
+        expect(TermInfo).to receive(:call_terminfo!).with(:tiparm, 'converted_template').and_return(return_pointer)
+
+        result = TermInfo.tiparm(template_object)
+        expect(result).to eq('result')
+      end
+
+      it "handles multiple integer parameters" do
+        return_pointer = double(to_s: 'multi_param_result')
+        expect(TermInfo).to receive(:call_terminfo!).with(
+          :tiparm,
+          'template',
+          Fiddle::TYPE_INT, 10,
+          Fiddle::TYPE_INT, 20,
+          Fiddle::TYPE_INT, 30
+        ).and_return(return_pointer)
+
+        result = TermInfo.tiparm('template', 10, 20, 30)
+        expect(result).to eq('multi_param_result')
+      end
+
+      it "converts result pointer to string" do
+        return_pointer = double(to_s: 'converted_result')
+        allow(TermInfo).to receive(:call_terminfo!).and_return(return_pointer)
+
+        result = TermInfo.tiparm('template')
+        expect(result).to be_a(String)
+        expect(result).to eq('converted_result')
       end
     end
   end
