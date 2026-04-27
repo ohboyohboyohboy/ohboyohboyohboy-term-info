@@ -1,12 +1,13 @@
 PATH
   remote: .
   specs:
-    ohboyohboyohboy-term-info (0.1.0)
+    ohboyohboyohboy-term-info (0.2.0)
 
 GEM
   remote: https://rubygems.org/
   specs:
     ast (2.4.3)
+    bump (0.10.0)
     date (3.5.1)
     diff-lcs (1.6.2)
     erb (6.0.4)
@@ -79,6 +80,7 @@ PLATFORMS
   x86_64-linux
 
 DEPENDENCIES
+  bump (~> 0.10.0)
   irb
   ohboyohboyohboy-term-info!
   rake (~> 13.0)
