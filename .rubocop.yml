@@ -1,4 +1,5 @@
 AllCops:
+  NewCops: enable
   TargetRubyVersion: 3.2
 
 Style/StringLiterals:
@@ -9,3 +10,15 @@ Style/StringLiteralsInInterpolation:
 
 Style/SignalException:
   EnforcedStyle: only_fail
+
+Style/Documentation:
+  Enabled: false
+
+Metrics/MethodLength:
+  Enabled: false
+
+Metrics/BlockLength:
+  Enabled: false
+
+Metrics/ModuleLength:
+  Enabled: false

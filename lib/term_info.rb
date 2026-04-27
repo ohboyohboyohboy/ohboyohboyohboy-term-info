@@ -45,9 +45,7 @@ module TermInfo
     end
 
     def curses_dll_handle
-      unless defined?(@curses_dll_handle)
-        @curses_dll_handle = discover_curses_dll_handle
-      end
+      @curses_dll_handle = discover_curses_dll_handle unless defined?(@curses_dll_handle)
       @curses_dll_handle
     end
 
@@ -55,44 +53,42 @@ module TermInfo
       @terminfo_functions ||= setup_terminfo_functions
     end
 
-    def call_terminfo!(name, *args)
+    def call_terminfo!(name, *)
       function_ref =
         terminfo_functions.fetch(name.to_s) do
           fail NameError, "#{name.inspect} is not a defined terminfo function name"
         end
-      function_ref.call(*args)
+      function_ref.call(*)
     end
 
     private
 
     def setup_terminfo_functions
-      Hash[
-        FUNCTION_SIGNATURE_MAPPING.map do |lib_function_name, signatures|
-          function =
-            signatures.detect do |signature|
-              f = try_function_signature(signature) and break(f)
-            end
+      FUNCTION_SIGNATURE_MAPPING.to_h do |lib_function_name, signatures|
+        function =
+          signatures.detect do |signature|
+            f = try_function_signature(signature) and break(f)
+          end
 
-          function ||= ->(*args) {
-            fail NotImplementedError, "Failed to identify terminfo function #{lib_function_name.inspect}"
-          }
+        function ||= lambda { |*_args|
+          fail NotImplementedError, "Failed to identify terminfo function #{lib_function_name.inspect}"
+        }
 
-          [lib_function_name.to_s, function]
-        end
-      ]
+        [lib_function_name.to_s, function]
+      end
     end
 
     def try_function_signature(signature_spec)
       curses = curses_dll_handle
 
-      function_name, arg_types, return_type = signature_spec.strip.split(%r[\s*->\s*], 3)
+      function_name, arg_types, return_type = signature_spec.strip.split(/\s*->\s*/, 3)
       arg_types = parse_fiddle_types(arg_types)
       return_type = parse_fiddle_types(return_type).first
       pointer = curses[function_name]
 
       Fiddle::Function.new(pointer, arg_types, return_type)
-    rescue => error
-      warn(error)
+    rescue StandardError => e
+      warn(e)
       nil
     end
 
@@ -105,7 +101,11 @@ module TermInfo
 
     def discover_curses_dll_handle
       possible_curses_dll_search_names.each do |lib_name|
-        handle = Fiddle.dlopen(lib_name) rescue nil
+        handle = begin
+          Fiddle.dlopen(lib_name)
+        rescue StandardError
+          nil
+        end
         return handle unless handle.nil?
       end
       nil

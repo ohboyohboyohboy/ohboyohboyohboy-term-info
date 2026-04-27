@@ -101,9 +101,9 @@ RSpec.describe TermInfo do
 
     context "when function does not exist" do
       it "raises NameError" do
-        expect {
+        expect do
           TermInfo.call_terminfo!(:nonexistent_function)
-        }.to raise_error(NameError, /nonexistent_function.*is not a defined terminfo function name/)
+        end.to raise_error(NameError, /nonexistent_function.*is not a defined terminfo function name/)
       end
     end
   end
@@ -119,7 +119,7 @@ RSpec.describe TermInfo do
         allow(TermInfo).to receive(:with_error_pointer).and_yield(double(to_i: 0))
         allow(TermInfo).to receive(:call_terminfo!).and_return(0)
 
-        expect { TermInfo.setupterm(io: STDOUT, term: 'xterm') }.not_to raise_error
+        expect { TermInfo.setupterm(io: $stdout, term: 'xterm') }.not_to raise_error
       end
 
       context "when setupterm succeeds" do
