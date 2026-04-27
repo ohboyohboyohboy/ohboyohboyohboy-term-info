@@ -115,9 +115,13 @@ module TermInfo
       size = Fiddle::SIZEOF_INT
       error_pointer = Fiddle::Pointer.malloc(size)
       return_value = yield(error_pointer)
-      error_code = error_pointer[0, size].unpack1('i')
+      error_code = unpack_error_pointer(error_pointer, size)
 
       [return_value, error_code]
+    end
+
+    def unpack_error_pointer(error_pointer, size)
+      error_pointer[0, size].unpack1('i')
     end
   end
 
